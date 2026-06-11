@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+    body { font-family: 'Calibri', sans-serif; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+    th, td { border: 1px solid black; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    h2 { color: #2E5A88; border-bottom: 2px solid #2E5A88; }
+</style>
+</head>
+<body>
+    <h1>Project Database Schema Report</h1>
+
+    <h2>1. users</h2>
+    <table>
+        <tr><th>Attribute</th><th>Datatype</th><th>Constraints</th></tr>
+        <tr><td>id</td><td>UUID</td><td>PRIMARY KEY, DEFAULT gen_random_uuid()</td></tr>
+        <tr><td>email</td><td>VARCHAR(255)</td><td>NOT NULL, UNIQUE</td></tr>
+        <tr><td>username</td><td>VARCHAR(100)</td><td>NOT NULL, UNIQUE</td></tr>
+        <tr><td>password_hash</td><td>VARCHAR(255)</td><td>NOT NULL</td></tr>
+        <tr><td>full_name</td><td>VARCHAR(255)</td><td>NOT NULL</td></tr>
+        <tr><td>role</td><td>VARCHAR(20)</td><td>NOT NULL, CHECK (STUDENT, FACULTY, ADMIN)</td></tr>
+        <tr><td>phone</td><td>VARCHAR(20)</td><td></td></tr>
+        <tr><td>avatar_url</td><td>VARCHAR(500)</td><td></td></tr>
+        <tr><td>is_active</td><td>BOOLEAN</td><td>NOT NULL, DEFAULT TRUE</td></tr>
+        <tr><td>last_login</td><td>TIMESTAMPTZ</td><td></td></tr>
+        <tr><td>created_at</td><td>TIMESTAMPTZ</td><td>NOT NULL, DEFAULT NOW()</td></tr>
+        <tr><td>updated_at</td><td>TIMESTAMPTZ</td><td>NOT NULL, DEFAULT NOW()</td></tr>
+    </table>
+
+    <h2>2. student_profiles</h2>
+    <table>
+        <tr><th>Attribute</th><th>Datatype</th><th>Constraints</th></tr>
+        <tr><td>id</td><td>UUID</td><td>PRIMARY KEY</td></tr>
+        <tr><td>user_id</td><td>UUID</td><td>NOT NULL, UNIQUE, FK (users.id) ON DELETE CASCADE</td></tr>
+        <tr><td>course_id</td><td>UUID</td><td>FK (courses.id)</td></tr>
+        <tr><td>enrollment_number</td><td>VARCHAR(50)</td><td>UNIQUE</td></tr>
+        <tr><td>current_semester</td><td>INTEGER</td><td>DEFAULT 1, CHECK (>= 1)</td></tr>
+        <tr><td>academic_year</td><td>VARCHAR(20)</td><td></td></tr>
+        <tr><td>address</td><td>TEXT</td><td></td></tr>
+        <tr><td>date_of_birth</td><td>DATE</td><td></td></tr>
+        <tr><td>guardian_name</td><td>VARCHAR(255)</td><td></td></tr>
+        <tr><td>guardian_phone</td><td>VARCHAR(20)</td><td></td></tr>
+    </table>
+
+    <h2>3. faculty_profiles</h2>
+    <table>
+        <tr><th>Attribute</th><th>Datatype</th><th>Constraints</th></tr>
+        <tr><td>id</td><td>UUID</td><td>PRIMARY KEY</td></tr>
+        <tr><td>user_id</td><td>UUID</td><td>NOT NULL, UNIQUE, FK (users.id) ON DELETE CASCADE</td></tr>
+        <tr><td>department</td><td>VARCHAR(100)</td><td></td></tr>
+        <tr><td>designation</td><td>VARCHAR(100)</td><td></td></tr>
+        <tr><td>qualification</td><td>VARCHAR(255)</td><td></td></tr>
+        <tr><td>address</td><td>TEXT</td><td></td></tr>
+        <tr><td>joining_date</td><td>DATE</td><td></td></tr>
+    </table>
+
+    <h2>4. courses</h2>
+    <table>
+        <tr><th>Attribute</th><th>Datatype</th><th>Constraints</th></tr>
+        <tr><td>id</td><td>UUID</td><td>PRIMARY KEY</td></tr>
+        <tr><td>name</td><td>VARCHAR(100)</td><td>NOT NULL</td></tr>
+        <tr><td>code</td><td>VARCHAR(20)</td><td>NOT NULL, UNIQUE</td></tr>
+        <tr><td>total_semesters</td><td>INTEGER</td><td>NOT NULL, CHECK (>= 1)</td></tr>
+        <tr><td>total_credits</td><td>INTEGER</td><td></td></tr>
+        <tr><td>is_active</td><td>BOOLEAN</td><td>NOT NULL, DEFAULT TRUE</td></tr>
+    </table>
+
+    <h2>5. subjects</h2>
+    <table>
+        <tr><th>Attribute</th><th>Datatype</th><th>Constraints</th></tr>
+        <tr><td>id</td><td>UUID</td><td>PRIMARY KEY</td></tr>
+        <tr><td>course_id</td><td>UUID</td><td>NOT NULL, FK (courses.id) ON DELETE CASCADE</td></tr>
+        <tr><td>faculty_id</td><td>UUID</td><td>FK (users.id)</td></tr>
+        <tr><td>name</td><td>VARCHAR(200)</td><td>NOT NULL</td></tr>
+        <tr><td>code</td><td>VARCHAR(20)</td><td>NOT NULL, UNIQUE</td></tr>
+        <tr><td>semester</td><td>INTEGER</td><td>NOT NULL, CHECK (>= 1)</td></tr>
+        <tr><td>credits</td><td>INTEGER</td><td>NOT NULL</td></tr>
+        <tr><td>type</td><td>VARCHAR(20)</td><td>NOT NULL, DEFAULT 'CORE', CHECK (CORE, ELECTIVE, LAB, PROJECT)</td></tr>
+        <tr><td>max_internal_marks</td><td>FLOAT</td><td>DEFAULT 40.0</td></tr>
+        <tr><td>max_external_marks</td><td>FLOAT</td><td>DEFAULT 60.0</td></tr>
+    </table>
+
+    <h2>6. assignments</h2>
+    <table>
+        <tr><th>Attribute</th><th>Datatype</th><th>Constraints</th></tr>
+        <tr><td>id</td><td>UUID</td><td>PRIMARY KEY</td></tr>
+        <tr><td>faculty_id</td><td>UUID</td><td>NOT NULL, FK (users.id)</td></tr>
+        <tr><td>subject_id</td><td>UUID</td><td>NOT NULL, FK (subjects.id)</td></tr>
+        <tr><td>title</td><td>VARCHAR(300)</td><td>NOT NULL</td></tr>
+        <tr><td>instructions</td><td>TEXT</td><td></td></tr>
+        <tr><td>total_marks</td><td>FLOAT</td><td>NOT NULL</td></tr>
+        <tr><td>status</td><td>VARCHAR(20)</td><td>CHECK (DRAFT, PUBLISHED, CLOSED)</td></tr>
+        <tr><td>deadline</td><td>TIMESTAMPTZ</td><td>NOT NULL</td></tr>
+    </table>
+
+    <h2>7. submissions</h2>
+    <table>
+        <tr><th>Attribute</th><th>Datatype</th><th>Constraints</th></tr>
+        <tr><td>id</td><td>UUID</td><td>PRIMARY KEY</td></tr>
+        <tr><td>assignment_id</td><td>UUID</td><td>NOT NULL, FK (assignments.id) ON DELETE CASCADE</td></tr>
+        <tr><td>student_id</td><td>UUID</td><td>NOT NULL, FK (users.id)</td></tr>
+        <tr><td>file_url</td><td>VARCHAR(500)</td><td>NOT NULL</td></tr>
+        <tr><td>obtained_marks</td><td>FLOAT</td><td></td></tr>
+        <tr><td>status</td><td>VARCHAR(20)</td><td>CHECK (SUBMITTED, GRADED, RETURNED)</td></tr>
+        <tr><td>UNIQUE</td><td>(assignment_id, student_id)</td><td>Composite constraint</td></tr>
+    </table>
+
+    <h2>8. attendance</h2>
+    <table>
+        <tr><th>Attribute</th><th>Datatype</th><th>Constraints</th></tr>
+        <tr><td>id</td><td>UUID</td><td>PRIMARY KEY</td></tr>
+        <tr><td>subject_id</td><td>UUID</td><td>NOT NULL, FK (subjects.id)</td></tr>
+        <tr><td>faculty_id</td><td>UUID</td><td>NOT NULL, FK (users.id)</td></tr>
+        <tr><td>date</td><td>DATE</td><td>NOT NULL</td></tr>
+        <tr><td>records</td><td>JSONB</td><td>NOT NULL, DEFAULT '[]'</td></tr>
+        <tr><td>UNIQUE</td><td>(subject_id, date)</td><td>Composite constraint</td></tr>
+    </table>
+
+    <h2>9. internal_marks</h2>
+    <table>
+        <tr><th>Attribute</th><th>Datatype</th><th>Constraints</th></tr>
+        <tr><td>id</td><td>UUID</td><td>PRIMARY KEY</td></tr>
+        <tr><td>student_id</td><td>UUID</td><td>NOT NULL, FK (users.id)</td></tr>
+        <tr><td>subject_id</td><td>UUID</td><td>NOT NULL, FK (subjects.id)</td></tr>
+        <tr><td>component</td><td>VARCHAR(100)</td><td>NOT NULL</td></tr>
+        <tr><td>obtained_marks</td><td>FLOAT</td><td></td></tr>
+        <tr><td>UNIQUE</td><td>(student_id, subject_id, component)</td><td>Composite constraint</td></tr>
+    </table>
+
+    <h2>10. exam_results</h2>
+    <table>
+        <tr><th>Attribute</th><th>Datatype</th><th>Constraints</th></tr>
+        <tr><td>id</td><td>UUID</td><td>PRIMARY KEY</td></tr>
+        <tr><td>student_id</td><td>UUID</td><td>NOT NULL, FK (users.id)</td></tr>
+        <tr><td>subject_id</td><td>UUID</td><td>NOT NULL, FK (subjects.id)</td></tr>
+        <tr><td>grade</td><td>VARCHAR(5)</td><td></td></tr>
+        <tr><td>semester</td><td>INTEGER</td><td>NOT NULL</td></tr>
+        <tr><td>UNIQUE</td><td>(student_id, subject_id, exam_type, academic_year)</td><td>Composite constraint</td></tr>
+    </table>
+
+    <h2>11. hostels</h2>
+    <table>
+        <tr><th>Attribute</th><th>Datatype</th><th>Constraints</th></tr>
+        <tr><td>id</td><td>UUID</td><td>PRIMARY KEY</td></tr>
+        <tr><td>name</td><td>VARCHAR(200)</td><td>NOT NULL</td></tr>
+        <tr><td>type</td><td>VARCHAR(20)</td><td>CHECK (BOYS, GIRLS, MIXED)</td></tr>
+        <tr><td>floors</td><td>INTEGER</td><td>DEFAULT 1</td></tr>
+    </table>
+
+    <h2>12. hostel_rooms</h2>
+    <table>
+        <tr><th>Attribute</th><th>Datatype</th><th>Constraints</th></tr>
+        <tr><td>id</td><td>UUID</td><td>PRIMARY KEY</td></tr>
+        <tr><td>hostel_id</td><td>UUID</td><td>NOT NULL, FK (hostels.id) ON DELETE CASCADE</td></tr>
+        <tr><td>room_number</td><td>VARCHAR(30)</td><td>NOT NULL</td></tr>
+        <tr><td>capacity</td><td>INTEGER</td><td>NOT NULL, CHECK (> 0)</td></tr>
+        <tr><td>UNIQUE</td><td>(hostel_id, room_number)</td><td>Composite constraint</td></tr>
+    </table>
+
+    <h2>13. notices</h2>
+    <table>
+        <tr><th>Attribute</th><th>Datatype</th><th>Constraints</th></tr>
+        <tr><td>id</td><td>UUID</td><td>PRIMARY KEY</td></tr>
+        <tr><td>title</td><td>VARCHAR(300)</td><td>NOT NULL</td></tr>
+        <tr><td>target_audience</td><td>VARCHAR(50)</td><td>DEFAULT 'all'</td></tr>
+    </table>
+
+    <h2>14. grievances</h2>
+    <table>
+        <tr><th>Attribute</th><th>Datatype</th><th>Constraints</th></tr>
+        <tr><td>id</td><td>UUID</td><td>PRIMARY KEY</td></tr>
+        <tr><td>student_id</td><td>UUID</td><td>FK (users.id)</td></tr>
+        <tr><td>status</td><td>VARCHAR(20)</td><td>CHECK (OPEN, IN_REVIEW, RESOLVED, REJECTED)</td></tr>
+        <tr><td>priority</td><td>VARCHAR(10)</td><td>CHECK (low, medium, high)</td></tr>
+    </table>
+
+    <h2>15. notifications</h2>
+    <table>
+        <tr><th>Attribute</th><th>Datatype</th><th>Constraints</th></tr>
+        <tr><td>id</td><td>UUID</td><td>PRIMARY KEY</td></tr>
+        <tr><td>user_id</td><td>UUID</td><td>NOT NULL, FK (users.id) ON DELETE CASCADE</td></tr>
+        <tr><td>is_read</td><td>BOOLEAN</td><td>DEFAULT FALSE</td></tr>
+    </table>
+
+</body>
+</html>

@@ -1,0 +1,46 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: eduportal_db
+    environment:
+      POSTGRES_DB: eduportal
+      POSTGRES_USER: eduportal_user
+      POSTGRES_PASSWORD: eduportal_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eduportal_user -d eduportal"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: eduportal_backend
+    ports:
+      - "8080:8080"
+    environment:
+      DB_USERNAME: eduportal_user
+      DB_PASSWORD: eduportal_pass
+      JWT_SECRET: ThisIsAVeryLongSecretKeyForJWTSigningThatIsAtLeast256BitsLongForHS256Algorithm
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/eduportal
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend/uploads:/app/uploads
+
+  frontend:
+    build: ./frontend
+    container_name: eduportal_frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

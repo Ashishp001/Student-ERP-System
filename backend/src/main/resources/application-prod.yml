@@ -1,0 +1,19 @@
+# Production-specific overrides
+spring:
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+  flyway:
+    baseline-on-migrate: false
+
+app:
+  cors:
+    allowed-origins: ${CORS_ORIGIN:https://eduportal.iicmr.ac.in}
+
+logging:
+  level:
+    com.iicmr.eduportal: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
